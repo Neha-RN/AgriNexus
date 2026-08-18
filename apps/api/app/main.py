@@ -1,3 +1,4 @@
+from app.api import router as api_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,6 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(api_router)
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
