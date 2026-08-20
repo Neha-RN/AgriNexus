@@ -15,6 +15,7 @@ import type { Field } from "@/lib/api";
 
 type FieldMapProps = {
   fields: Field[];
+  onFieldSelect?: (field: Field) => void;
 };
 
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -65,8 +66,12 @@ function FitFieldBounds({
 
 function FieldLayers({
   featureCollection,
+  fields,
+  onFieldSelect,
 }: {
   featureCollection: FeatureCollection;
+  fields: Field[];
+  onFieldSelect?: (field: Field) => void;
 }) {
   const map = useMap();
 
@@ -82,6 +87,7 @@ function FieldLayers({
   ) => {
     const properties = feature.properties;
 
+    const fieldId = properties?.id;
     const name = properties?.name ?? "Field";
     const cropType = properties?.crop_type ?? "Unknown crop";
     const area = properties?.area_hectares ?? "Unknown";
@@ -101,6 +107,16 @@ function FieldLayers({
             padding: [40, 40],
             maxZoom: 16,
           });
+        }
+
+        if (typeof fieldId === "number" && onFieldSelect) {
+          const selected = fields.find(
+            (field) => field.id === fieldId,
+          );
+
+          if (selected) {
+            onFieldSelect(selected);
+          }
         }
       },
 
@@ -130,7 +146,10 @@ function FieldLayers({
   );
 }
 
-export default function FieldMap({ fields }: FieldMapProps) {
+export default function FieldMap({
+  fields,
+  onFieldSelect,
+}: FieldMapProps) {
   const featureCollection = useMemo(
     () => fieldsToFeatureCollection(fields),
     [fields],
@@ -160,7 +179,11 @@ export default function FieldMap({ fields }: FieldMapProps) {
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        <FieldLayers featureCollection={featureCollection} />
+        <FieldLayers
+          featureCollection={featureCollection}
+          fields={fields}
+          onFieldSelect={onFieldSelect}
+        />
 
         <FitFieldBounds featureCollection={featureCollection} />
       </MapContainer>
