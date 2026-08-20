@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
+import {
+  GeoJSON,
+  LayersControl,
+  MapContainer,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
 import type { Feature, FeatureCollection } from "geojson";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -138,10 +144,21 @@ export default function FieldMap({ fields }: FieldMapProps) {
         scrollWheelZoom={false}
         className="h-full w-full"
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+        <LayersControl position="topright">
+          <LayersControl.BaseLayer checked name="OpenStreetMap">
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+          </LayersControl.BaseLayer>
+
+          <LayersControl.BaseLayer name="Satellite">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution="Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
 
         <FieldLayers featureCollection={featureCollection} />
 
