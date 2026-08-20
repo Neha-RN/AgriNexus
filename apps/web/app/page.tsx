@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getFields, getHealth, type Field } from "@/lib/api";
+import dynamic from "next/dynamic";
+import { getHealth, getFields, type Field } from "@/lib/api";
+
+const FieldMap = dynamic(() => import("@/components/FieldMap"), {
+  ssr: false,
+});
 
 type ConnectionState = "checking" | "connected" | "unavailable";
 type FieldsState = "loading" | "loaded" | "error";
@@ -19,14 +24,10 @@ export default function Home() {
 
     getHealth()
       .then(() => {
-        if (isMounted) {
-          setConnectionState("connected");
-        }
+        if (isMounted) setConnectionState("connected");
       })
       .catch(() => {
-        if (isMounted) {
-          setConnectionState("unavailable");
-        }
+        if (isMounted) setConnectionState("unavailable");
       });
 
     return () => {
@@ -40,16 +41,12 @@ export default function Home() {
     getFields()
       .then((data) => {
         if (!isMounted) return;
-
         setFields(data);
         setFieldsState("loaded");
       })
       .catch((err: unknown) => {
         if (!isMounted) return;
-
-        setFieldsError(
-          err instanceof Error ? err.message : "Unknown error",
-        );
+        setFieldsError(err instanceof Error ? err.message : "Unknown error");
         setFieldsState("error");
       });
 
@@ -83,10 +80,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
-      <div className="w-full max-w-3xl space-y-8">
-        <div className="space-y-6 text-center">
+      <div className="max-w-3xl w-full space-y-8">
+        <div className="text-center space-y-6">
           <h1 className="text-4xl font-bold tracking-tight">AgriNexus</h1>
-
           <p className="text-gray-500">
             Connecting agricultural data and infrastructure.
           </p>
@@ -100,6 +96,19 @@ export default function Home() {
         </div>
 
         <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Field Map</h2>
+          {fieldsState === "loaded" && <FieldMap fields={fields} />}
+          {fieldsState === "loading" && (
+            <p className="text-sm text-gray-500">Loading map...</p>
+          )}
+          {fieldsState === "error" && (
+            <p className="text-sm text-red-600">
+              Map unavailable{fieldsError ? `: ${fieldsError}` : ""}
+            </p>
+          )}
+        </section>
+
+        <section className="space-y-4">
           <h2 className="text-xl font-semibold">Fields</h2>
 
           {fieldsState === "loading" && (
@@ -108,8 +117,7 @@ export default function Home() {
 
           {fieldsState === "error" && (
             <p className="text-sm text-red-600">
-              Failed to load fields
-              {fieldsError ? `: ${fieldsError}` : ""}
+              Failed to load fields{fieldsError ? `: ${fieldsError}` : ""}
             </p>
           )}
 
@@ -139,22 +147,15 @@ export default function Home() {
                     </th>
                   </tr>
                 </thead>
-
                 <tbody className="divide-y divide-gray-200">
                   {fields.map((field) => (
                     <tr key={field.id}>
                       <td className="px-4 py-2">{field.name}</td>
-
                       <td className="px-4 py-2">{field.country_id}</td>
-
-                      <td className="px-4 py-2">
-                        {field.crop_type ?? "—"}
-                      </td>
-
+                      <td className="px-4 py-2">{field.crop_type ?? "—"}</td>
                       <td className="px-4 py-2">
                         {field.area_hectares ?? "—"}
                       </td>
-
                       <td className="px-4 py-2">
                         {field.geometry?.type ?? "—"}
                       </td>
