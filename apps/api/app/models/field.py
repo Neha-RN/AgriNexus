@@ -55,3 +55,9 @@ class Field(Base):
         "Country",
         back_populates="fields",
     )
+
+    observations: Mapped[list["SatelliteObservation"]] = relationship(
+    "SatelliteObservation",
+    back_populates="field",
+    cascade="all, delete-orphan",
+    )
