@@ -12,26 +12,52 @@ from app.core.database import Base
 
 class SatelliteObservation(Base):
     """
-    Minimal, provider-independent record of a satellite pass over a field.
-    No imagery, no NDVI, no provider-specific fields — those come later
-    once a specific provider is integrated.
+    Provider-independent record of a satellite pass over a field.
+
+    Stores satellite scene metadata only. Derived values such as NDVI
+    are stored separately as SatelliteMetric records.
     """
 
     __tablename__ = "satellite_observations"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
+
     field_id: Mapped[int] = mapped_column(
-        ForeignKey("fields.id"), nullable=False, index=True
+        ForeignKey("fields.id"),
+        nullable=False,
+        index=True,
     )
-    observation_date: Mapped[date] = mapped_column(Date, nullable=False)
-    source: Mapped[str] = mapped_column(String(64), nullable=False)
+
+    observation_date: Mapped[date] = mapped_column(
+        Date,
+        nullable=False,
+    )
+
+    source: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+    )
+
     cloud_cover: Mapped[Optional[Decimal]] = mapped_column(
-        Numeric(5, 2), nullable=True
+        Numeric(5, 2),
+        nullable=True,
     )
+
     external_scene_id: Mapped[Optional[str]] = mapped_column(
-        String(255), nullable=True
+        String(255),
+        nullable=True,
     )
 
     field: Mapped["Field"] = relationship(
-        "Field", back_populates="observations"
+        "Field",
+        back_populates="observations",
+    )
+
+    metrics: Mapped[list["SatelliteMetric"]] = relationship(
+        "SatelliteMetric",
+        back_populates="observation",
+        cascade="all, delete-orphan",
     )
